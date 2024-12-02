@@ -2,8 +2,8 @@
 import { Server } from "http";
 import app from "./app";
 
-import config from "./config";
-import { seedSuperAdmin } from "./utils/seed";
+import config from "./app/config";
+import { seedSuperAdmin } from "./app/config/utils/seed";
 
 async function main() {
   await seedSuperAdmin();
