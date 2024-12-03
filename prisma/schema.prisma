@@ -65,6 +65,18 @@ model Vendor {
   @@map("vendors")
 }
 
+
+model Customer {
+  id                String   @id @default(uuid())
+  name              String
+  email             String   @unique
+  profilePhoto      String?
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("customers")
+}
 enum UserRole {
   SUPER_ADMIN
   ADMIN
