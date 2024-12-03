@@ -95,6 +95,30 @@ model Product {
 
   @@map("products")
 }
+
+
+
+model Category {
+  id       String   @id @default(uuid())
+  name     String   @unique
+  image    String
+
+
+  @@map("categories")
+}
+model Order {
+  id         String   @id @default(uuid())
+  customerId String
+  vendorId   String
+  totalPrice Float
+
+  transactionId String  @unique
+
+
+
+  @@map("orders")
+}
+
 enum UserRole {
   SUPER_ADMIN
   ADMIN
