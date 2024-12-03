@@ -129,6 +129,17 @@ model OrderDetail {
 
   @@map("order_details")
 }
+model Review {
+  id         String   @id @default(uuid())
+  productId  String
+  customerId String
+  rating     Int
+  comment    String?
+
+ 
+
+  @@map("reviews")
+}
 
 enum UserRole {
   SUPER_ADMIN
