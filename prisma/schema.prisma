@@ -118,6 +118,17 @@ model Order {
 
   @@map("orders")
 }
+model OrderDetail {
+  id         String   @id @default(uuid())
+  orderId    String
+  productId  String
+  quantity   Int
+  pricePerUnit Float
+
+
+
+  @@map("order_details")
+}
 
 enum UserRole {
   SUPER_ADMIN
