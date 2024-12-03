@@ -141,6 +141,17 @@ model Review {
   @@map("reviews")
 }
 
+model Follow {
+  id          String   @id @default(uuid())
+  customerId  String
+  vendorId    String
+
+
+
+  @@map("followers")
+}
+
+
 enum UserRole {
   SUPER_ADMIN
   ADMIN
