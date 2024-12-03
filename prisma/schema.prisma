@@ -46,6 +46,25 @@ model Admin {
   @@map("admins")
 }
 
+
+
+model Vendor {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  shopName      String?
+  logo          String?
+  description   String?
+  isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+
+  user User @relation(fields: [email], references: [email])
+
+  @@map("vendors")
+}
+
 enum UserRole {
   SUPER_ADMIN
   ADMIN
