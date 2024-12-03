@@ -151,6 +151,16 @@ model Follow {
   @@map("followers")
 }
 
+model RecentProductView {
+  id          String   @id @default(uuid())
+  customerId  String
+  productId   String
+  viewedAt    DateTime @default(now())
+
+
+
+  @@map("recent_product_views")
+}
 
 enum UserRole {
   SUPER_ADMIN
