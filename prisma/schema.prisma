@@ -77,6 +77,24 @@ model Customer {
 
   @@map("customers")
 }
+
+
+
+
+model Product {
+  id             String   @id @default(uuid())
+  name           String
+  price          Float
+  inventoryCount Int
+  description    String?
+  discount       Float?
+  categoryId     String
+  vendorId       String
+ 
+
+
+  @@map("products")
+}
 enum UserRole {
   SUPER_ADMIN
   ADMIN
