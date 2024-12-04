@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Prisma } from "@prisma/client";
+
+import prisma from "../../utils/prisma";
+
 import {
   calculatePagination,
   IPaginationOptions,
 } from "../../utils/calculatePagination";
-import prisma from "../../utils/prisma";
-import { IAuthUser } from "../Users/user.interface";
+import { IAuthUser } from "../users/user.interface";
 import { TProductFilterRequest, TProducts } from "./product.interface";
 
 const createProduct = async (payload: TProducts, user: IAuthUser) => {
