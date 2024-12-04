@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Prisma } from "@prisma/client";
-
-import prisma from "../../utils/prisma";
-
 import {
   calculatePagination,
   IPaginationOptions,
 } from "../../utils/calculatePagination";
+import prisma from "../../utils/prisma";
+
 import { IAuthUser } from "../users/user.interface";
 import { TProductFilterRequest, TProducts } from "./product.interface";
 
@@ -113,6 +112,10 @@ const getAllProducts = async (
     },
   });
 
+  andConditions.push({
+    isDeleted: false,
+  });
+
   const whereConditions: Prisma.ProductWhereInput =
     andConditions.length > 0 ? { AND: andConditions } : {};
 
@@ -145,7 +148,66 @@ const getAllProducts = async (
   };
 };
 
+const getProductById = async (productId: string) => {
+  const product = await prisma.product.findUniqueOrThrow({
+    where: {
+      id: productId,
+      isDeleted: false,
+    },
+    include: {
+      category: true,
+      vendor: true,
+      reviews: true,
+    },
+  });
+
+  return product;
+};
+
+const updateProduct = async (
+  productId: string,
+  updateData: Prisma.ProductUpdateInput
+) => {
+  await prisma.product.findUniqueOrThrow({
+    where: { id: productId },
+  });
+
+  const updatedProduct = await prisma.product.update({
+    where: {
+      id: productId,
+    },
+    data: updateData,
+    include: {
+      category: true,
+      vendor: true,
+      reviews: true,
+    },
+  });
+
+  return updatedProduct;
+};
+
+const deleteProduct = async (productId: string) => {
+  await prisma.product.findUniqueOrThrow({
+    where: { id: productId },
+  });
+
+  const deletedProduct = await prisma.product.update({
+    where: {
+      id: productId,
+    },
+    data: {
+      isDeleted: true,
+    },
+  });
+
+  return deletedProduct;
+};
+
 export const ProductServices = {
   createProduct,
   getAllProducts,
+  getProductById,
+  updateProduct,
+  deleteProduct,
 };
