@@ -11,7 +11,7 @@ async function main() {
 
   // * Start the server and listen on the port specified in the config
   const server: Server = app.listen(config.port, () => {
-    console.log(`App is running on port ${config.port}`); // * Log that the server is running and listening on the port
+    console.log(`Server is running on port ${config.port}`); // * Log that the server is running and listening on the port
   });
 
   // * Function to handle cleanup and close the server gracefully in case of errors
