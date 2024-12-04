@@ -16,11 +16,4 @@ router.post(
 
 router.get("/", ProductController.getAllProducts);
 
-// router.patch(
-//   '/:categoryId',
-//   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
-//   validateRequest(categoryValidation.updateCategoryValidation),
-//   CategoryController.updateCategory,
-// );
-
 export const ProductRoutes = router;
