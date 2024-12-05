@@ -1,18 +1,30 @@
 import { Router } from "express"; // * Importing Router from Express
 import { AuthRoutes } from "../modules/auth/auth.route"; // * Importing authentication routes
+import { CategoryRoutes } from "../modules/category/category.route";
+import { ProductRoutes } from "../modules/products/product.route";
+import { UserRoutes } from "../modules/users/user.route";
 
 const router = Router(); // * Initializing the main router
 
-// !! Array to manage module-specific routes
 const moduleRouter = [
   {
-    path: "/auth", // !! Base path for authentication-related routes
-    route: AuthRoutes, // !! Routes defined in the Auth module
+    path: "/auth",
+    route: AuthRoutes,
+  },
+  {
+    path: "/users",
+    route: UserRoutes,
+  },
+  {
+    path: "/category",
+    route: CategoryRoutes,
+  },
+  {
+    path: "/products",
+    route: ProductRoutes,
   },
 ];
 
-// !! Dynamically applying all module routes to the main router
 moduleRouter.forEach((route) => router.use(route.path, route.route));
-
 // * Exporting the configured router for use in the main application
 export default router;
