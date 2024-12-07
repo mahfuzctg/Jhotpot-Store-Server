@@ -4,53 +4,72 @@ import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
 import { JwtPayload } from "jsonwebtoken";
 import config from "../config";
-
 import AppError from "../errors/appError";
-
 import prisma from "../utils/prisma";
 import { verifyToken } from "../utils/verifyJWT";
 
-// ! The auth middleware to protect routes and check the user's role and validity of the token
+// Extend the Request interface to include the user property
+declare global {
+  namespace Express {
+    interface Request {
+      user?: JwtPayload;
+    }
+  }
+}
+
+// Auth middleware to protect routes and validate tokens
 const auth = (...roles: string[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // * Retrieve the token from Authorization header
-      const token = req.headers.authorization;
-
-      // ? If no token is found in the request headers, throw an error
-      if (!token) {
+      // Retrieve the token from the Authorization header
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
         throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized!");
       }
 
-      // * Verify the token using the JWT secret and extract the decoded data
-      const decoded = verifyToken(
-        token,
-        config.jwt_access_secret as string
-      ) as JwtPayload;
+      const token = authHeader.split(" ")[1];
 
-      // * Destructure role and email from decoded JWT payload
+      // Verify the token using the JWT secret
+      let decoded: JwtPayload;
+      try {
+        decoded = verifyToken(
+          token,
+          config.jwt_access_secret as string
+        ) as JwtPayload;
+      } catch (error) {
+        throw new AppError(
+          httpStatus.UNAUTHORIZED,
+          "Invalid or expired token!"
+        );
+      }
+
+      // Destructure role and email from the decoded JWT payload
       const { role, email } = decoded;
 
-      // * Check if the user exists in the database and is active
-      await prisma.user.findUniqueOrThrow({
-        where: {
-          email,
-          status: UserStatus.ACTIVE,
-        },
+      // Check if the user exists and is active
+      const user = await prisma.user.findUnique({
+        where: { email },
       });
 
-      // ? If roles are provided, ensure the user's role is authorized for this route
-      if (roles.length && !roles.includes(role)) {
+      if (!user || user.status !== UserStatus.ACTIVE) {
+        throw new AppError(
+          httpStatus.UNAUTHORIZED,
+          "User is not active or does not exist!"
+        );
+      }
+
+      // If roles are provided, ensure the user's role is authorized
+      if (roles.length > 0 && !roles.includes(role)) {
         throw new AppError(httpStatus.FORBIDDEN, "Forbidden!");
       }
 
-      // ! Attach the decoded user data to the request object for use in other middleware or route handlers
-      req.user = decoded as JwtPayload;
+      // Attach the decoded user data to the request object
+      req.user = decoded;
 
-      // * Proceed to the next middleware or route handler
+      // Proceed to the next middleware or route handler
       next();
     } catch (err) {
-      // * Catch and pass any errors to the error handling middleware
+      // Catch and pass any errors to the error handling middleware
       next(err);
     }
   };
