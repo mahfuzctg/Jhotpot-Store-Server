@@ -5,8 +5,7 @@ import {
   IPaginationOptions,
 } from "../../utils/calculatePagination";
 import prisma from "../../utils/prisma";
-
-import { IAuthUser } from "../users/user.interface";
+import { IAuthUser } from "../Users/user.interface";
 import { TProductFilterRequest, TProducts } from "./product.interface";
 
 const createProduct = async (payload: TProducts, user: IAuthUser) => {
@@ -44,7 +43,15 @@ const getAllProducts = async (
   options: IPaginationOptions
 ) => {
   const { limit, page, skip } = calculatePagination(options);
-  const { searchTerm, minPrice, maxPrice, vendorId, ...filterData } = filters;
+  const {
+    searchTerm,
+    minPrice,
+    maxPrice,
+    vendorId,
+    flashSale,
+    category,
+    ...filterData
+  } = filters;
 
   const andConditions: Prisma.ProductWhereInput[] = [];
 
@@ -88,11 +95,31 @@ const getAllProducts = async (
     });
   }
 
+  // Filter by Flash Sale
+  const flashSaleBoolean =
+    typeof flashSale === "string" ? flashSale === "true" : undefined;
+
+  if (flashSaleBoolean !== undefined) {
+    andConditions.push({
+      flashSale: flashSaleBoolean,
+    });
+  }
+
   // Filter by vendorId
   if (vendorId) {
     andConditions.push({
       vendorId: {
         equals: vendorId,
+      },
+    });
+  }
+
+  if (category) {
+    andConditions.push({
+      category: {
+        name: {
+          equals: category,
+        },
       },
     });
   }

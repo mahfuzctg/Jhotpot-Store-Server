@@ -5,9 +5,11 @@ const createProductValidation = z.object({
     name: z.string({
       required_error: "Product Name is required",
     }),
-    image: z.string({
-      required_error: "Product image is required",
-    }),
+    image: z
+      .array(z.string(), {
+        required_error: "At least one product image is required",
+      })
+      .nonempty("Product image list cannot be empty"), // Validates that at least one image is provided
     price: z
       .number({
         required_error: "Product price is required",
@@ -41,9 +43,10 @@ const updateProductValidation = z.object({
       })
       .optional(),
     image: z
-      .string({
-        required_error: "Product image is required",
+      .array(z.string(), {
+        required_error: "At least one product image is required",
       })
+      .nonempty("Product image list cannot be empty")
       .optional(),
     price: z
       .number({

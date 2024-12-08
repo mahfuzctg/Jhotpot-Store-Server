@@ -3,7 +3,7 @@ export type TProducts = {
   price: number;
   inventory: number;
   description: string;
-  image: string;
+  image: string[];
   categoryId: string;
 };
 
@@ -14,4 +14,5 @@ export type TProductFilterRequest = {
   maxPrice?: number;
   inventory?: number;
   flashSale?: boolean;
+  category?: string;
 };
