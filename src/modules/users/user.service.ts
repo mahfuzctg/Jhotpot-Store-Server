@@ -1,11 +1,12 @@
-import { UserRole, UserStatus } from "@prisma/client";
-import bcrypt from "bcryptjs";
-import httpStatus from "http-status";
-import config from "../../config";
-import AppError from "../../errors/appError";
-import prisma from "../../utils/prisma";
-import { createToken } from "../../utils/verifyJWT";
-import { IAuthUser } from "./user.interface";
+import httpStatus from 'http-status';
+import AppError from '../../errors/appError';
+import prisma from '../../utils/prisma';
+import config from '../../config';
+import bcrypt from 'bcryptjs';
+import { UserRole, UserStatus } from '@prisma/client';
+import { createToken } from '../../utils/verifyJWT';
+import { IAuthUser } from './user.interfaces';
+
 
 const createAdmin = async (payload: {
   name: string;
@@ -20,12 +21,12 @@ const createAdmin = async (payload: {
   });
 
   if (user) {
-    throw new AppError(httpStatus.NOT_FOUND, "This user is already exist!");
+    throw new AppError(httpStatus.NOT_FOUND, 'This user is already exist!');
   }
 
   const hashedPassword: string = await bcrypt.hash(
     payload.password,
-    Number(config.bcrypt_salt_rounds)
+    Number(config.bcrypt_salt_rounds),
   );
 
   const newUser = await prisma.$transaction(async (tx) => {
@@ -45,7 +46,7 @@ const createAdmin = async (payload: {
         name: payload.name,
         email: user.email,
         profilePhoto:
-          "https://fiverr-res.cloudinary.com/images/q_auto,f_auto/gigs/83221961/original/425127947f0688643bcefba40b83c767b13e2a6a/illustrate-your-cartoon-avatar.jpg",
+          'https://fiverr-res.cloudinary.com/images/q_auto,f_auto/gigs/83221961/original/425127947f0688643bcefba40b83c767b13e2a6a/illustrate-your-cartoon-avatar.jpg',
       },
     });
 
@@ -63,13 +64,13 @@ const createAdmin = async (payload: {
   const accessToken = createToken(
     jwtPayload,
     config.jwt_access_secret as string,
-    config.jwt_access_expires_in as string
+    config.jwt_access_expires_in as string,
   );
 
   const refreshToken = createToken(
     jwtPayload,
     config.jwt_refresh_secret as string,
-    config.jwt_refresh_expires_in as string
+    config.jwt_refresh_expires_in as string,
   );
 
   const combinedResult = { accessToken, refreshToken, newUser };
@@ -90,12 +91,12 @@ const createVendor = async (payload: {
   });
 
   if (user) {
-    throw new AppError(httpStatus.NOT_FOUND, "This user is already exist!");
+    throw new AppError(httpStatus.NOT_FOUND, 'This user is already exist!');
   }
 
   const hashedPassword: string = await bcrypt.hash(
     payload.password,
-    Number(config.bcrypt_salt_rounds)
+    Number(config.bcrypt_salt_rounds),
   );
 
   const newUser = await prisma.$transaction(async (tx) => {
@@ -134,13 +135,13 @@ const createVendor = async (payload: {
   const accessToken = createToken(
     jwtPayload,
     config.jwt_access_secret as string,
-    config.jwt_access_expires_in as string
+    config.jwt_access_expires_in as string,
   );
 
   const refreshToken = createToken(
     jwtPayload,
     config.jwt_refresh_secret as string,
-    config.jwt_refresh_expires_in as string
+    config.jwt_refresh_expires_in as string,
   );
 
   const combinedResult = { accessToken, refreshToken, newUser };
@@ -161,12 +162,12 @@ const createCustomer = async (payload: {
   });
 
   if (user) {
-    throw new AppError(httpStatus.NOT_FOUND, "This user is already exist!");
+    throw new AppError(httpStatus.NOT_FOUND, 'This user is already exist!');
   }
 
   const hashedPassword: string = await bcrypt.hash(
     payload.password,
-    Number(config.bcrypt_salt_rounds)
+    Number(config.bcrypt_salt_rounds),
   );
 
   const newUser = await prisma.$transaction(async (tx) => {
@@ -186,7 +187,7 @@ const createCustomer = async (payload: {
         name: payload.name,
         email: user.email,
         profilePhoto:
-          "https://fiverr-res.cloudinary.com/images/q_auto,f_auto/gigs/83221961/original/425127947f0688643bcefba40b83c767b13e2a6a/illustrate-your-cartoon-avatar.jpg",
+          'https://fiverr-res.cloudinary.com/images/q_auto,f_auto/gigs/83221961/original/425127947f0688643bcefba40b83c767b13e2a6a/illustrate-your-cartoon-avatar.jpg',
       },
     });
 
@@ -204,13 +205,13 @@ const createCustomer = async (payload: {
   const accessToken = createToken(
     jwtPayload,
     config.jwt_access_secret as string,
-    config.jwt_access_expires_in as string
+    config.jwt_access_expires_in as string,
   );
 
   const refreshToken = createToken(
     jwtPayload,
     config.jwt_refresh_secret as string,
-    config.jwt_refresh_expires_in as string
+    config.jwt_refresh_expires_in as string,
   );
 
   const combinedResult = { accessToken, refreshToken, newUser };
@@ -263,9 +264,120 @@ const getMyProfile = async (user: IAuthUser) => {
   return { ...userInfo, ...profileInfo };
 };
 
+const getVendorUser = async (id: string) => {
+  const vendor = await prisma.vendor.findUniqueOrThrow({
+    where: {
+      id,
+    },
+    include: {
+      products: true,
+      followers: true,
+      orders: true,
+    },
+  });
+
+  return vendor;
+};
+
+const getCustomerUser = async (email: string) => {
+  const vendor = await prisma.customer.findUniqueOrThrow({
+    where: {
+      email,
+      isDeleted: false,
+    },
+    include: {
+      follows: true,
+      orders: true,
+      reviews: true,
+      recentProductView: true,
+    },
+  });
+
+  return vendor;
+};
+
+const followVendor = async (payload: { vendorId: string }, user: IAuthUser) => {
+  const customer = await prisma.customer.findUnique({
+    where: {
+      email: user?.email,
+      isDeleted: false,
+    },
+  });
+
+  if (!customer) {
+    throw new AppError(httpStatus.NOT_FOUND, "User doesn't exist!");
+  }
+
+  const vendor = await prisma.vendor.findUnique({
+    where: {
+      id: payload.vendorId,
+      isDeleted: false,
+    },
+  });
+
+  if (!vendor) {
+    throw new AppError(httpStatus.NOT_FOUND, "User doesn't exist!");
+  }
+
+  const follow = await prisma.follow.create({
+    data: {
+      customerId: customer.id,
+      vendorId: vendor.id,
+    },
+    include: {
+      customer: true,
+      vendor: true,
+    },
+  });
+
+  return follow;
+};
+
+const unfollowVendor = async (
+  payload: { vendorId: string },
+  user: IAuthUser,
+) => {
+  const customer = await prisma.customer.findUnique({
+    where: {
+      email: user?.email,
+      isDeleted: false,
+    },
+  });
+
+  if (!customer) {
+    throw new AppError(httpStatus.NOT_FOUND, "User doesn't exist!");
+  }
+
+  const vendor = await prisma.vendor.findUnique({
+    where: {
+      id: payload.vendorId,
+      isDeleted: false,
+    },
+  });
+
+  if (!vendor) {
+    throw new AppError(httpStatus.NOT_FOUND, "User doesn't exist!");
+  }
+
+  const unfollow = await prisma.follow.delete({
+    where: {
+      customerId_vendorId: {
+        customerId: customer.id,
+        vendorId: vendor.id,
+      },
+    },
+  });
+
+  return unfollow;
+};
+
 export const userService = {
   createAdmin,
   createVendor,
   createCustomer,
   getMyProfile,
+  getVendorUser,
+  getCustomerUser,
+  followVendor,
+  unfollowVendor,
 };

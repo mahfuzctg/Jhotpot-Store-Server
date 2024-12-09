@@ -1,7 +1,7 @@
 import httpStatus from 'http-status';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
-import { IAuthUser } from '../Users/user.interface';
+import { IAuthUser } from '../users/user.interfaces';
 import { RecentProductViewServices } from './recentProduct.service';
 
 const createRecentProduct = catchAsync(async (req, res) => {

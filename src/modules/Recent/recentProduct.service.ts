@@ -1,7 +1,7 @@
 import httpStatus from 'http-status';
 import AppError from '../../errors/appError';
 import prisma from '../../utils/prisma';
-import { IAuthUser } from '../Users/user.interface';
+import { IAuthUser } from '../users/user.interfaces';
 
 const createRecentProducts = async (
   payload: { productId: string },

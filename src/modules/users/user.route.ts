@@ -1,40 +1,74 @@
-import { UserRole } from "@prisma/client";
-import express from "express";
-import auth from "../../middlewares/auth";
-import validateRequest from "../../middlewares/validateRequest";
+import express from 'express';
 
-import { userController } from "./auth.controller";
-import { userValidation } from "./user.validation";
+import validateRequest from '../../middlewares/validateRequest';
+import { userValidation } from './user.validation';
+import auth from '../../middlewares/auth';
+import { UserRole } from '@prisma/client';
+import { userController } from './user.controller';
 
 const router = express.Router();
 
+
+
 router.get(
-  "/me",
+  '/me',
   auth(
     UserRole.SUPER_ADMIN,
     UserRole.ADMIN,
     UserRole.VENDOR,
-    UserRole.CUSTOMER
+    UserRole.CUSTOMER,
   ),
-  userController.getMyProfile
+  userController.getMyProfile,
+);
+
+router.get(
+  '/get-vendor/:vendorId',
+  auth(
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
+    UserRole.VENDOR,
+    UserRole.CUSTOMER,
+  ),
+  userController.getVendorUser,
+);
+
+router.get(
+  '/get-customer/:email',
+  auth(
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
+    UserRole.VENDOR,
+    UserRole.CUSTOMER,
+  ),
+  userController.getCustomerUser,
 );
 
 router.post(
-  "/create-admin",
+  '/create-admin',
   validateRequest(userValidation.createUser),
-  userController.createAdmin
+  userController.createAdmin,
 );
 
 router.post(
-  "/create-vendor",
+  '/create-vendor',
   validateRequest(userValidation.createUser),
-  userController.createVendor
+  userController.createVendor,
 );
 
 router.post(
-  "/create-customer",
+  '/create-customer',
   validateRequest(userValidation.createUser),
-  userController.createCustomer
+  userController.createCustomer,
 );
+
+router.post('/follow', auth(UserRole.CUSTOMER), userController.followVendor);
+
+router.delete(
+  '/unfollow',
+  auth(UserRole.CUSTOMER),
+  userController.unfollowVendor,
+);
+
+
 
 export const UserRoutes = router;

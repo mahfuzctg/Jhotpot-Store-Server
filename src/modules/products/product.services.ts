@@ -5,7 +5,7 @@ import {
   IPaginationOptions,
 } from "../../utils/calculatePagination";
 import prisma from "../../utils/prisma";
-import { IAuthUser } from "../Users/user.interface";
+import { IAuthUser } from "../users/user.interfaces";
 import { TProductFilterRequest, TProducts } from "./product.interface";
 
 const createProduct = async (payload: TProducts, user: IAuthUser) => {
