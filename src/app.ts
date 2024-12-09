@@ -5,10 +5,11 @@ import httpStatus from "http-status"; // HTTP status codes library
 
 // Import custom middlewares for global error handling and handling non-existing routes
 import globalErrorHandler from "./middlewares/globalErrorHandler";
-import notFound from "./middlewares/notFound";
+
 
 // Importing the router that contains all API routes
 import router from "./routes";
+import notFound from "./middlewares/notFound";
 
 const app: Application = express(); // Initialize an express application
 
