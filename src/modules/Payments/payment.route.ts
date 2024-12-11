@@ -1,17 +1,8 @@
+import { Router } from 'express';
+import { paymentController } from './payment.controller';
 
-import catchAsync from '../../utils/catchAsync';
-import { paymentServices } from './payment.services';
+const router = Router();
 
-const confirmationController = catchAsync(async (req, res) => {
-  const { transactionId, status } = req.query;
+router.post('/confirmation', paymentController.confirmationController);
 
-  const result = await paymentServices.confirmationService(
-    transactionId as string,
-    status as string,
-  );
-  res.send(result);
-});
-
-export const paymentController = {
-  confirmationController,
-};
+export const PaymentRoutes = router;
