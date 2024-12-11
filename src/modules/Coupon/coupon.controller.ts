@@ -51,19 +51,6 @@ const deleteCoupon = catchAsync(async (req, res) => {
   });
 });
 
-// const applyCoupon = catchAsync(async (req, res) => {
-//   const result = await CouponServices.applyCoupon(
-//     req.body,
-//     req.user as IAuthUser,
-//   );
-
-//   sendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     success: true,
-//     message: 'Coupon applied successfully!',
-//     data: result,
-//   });
-// });
 
 export const CouponController = {
   createCoupon,

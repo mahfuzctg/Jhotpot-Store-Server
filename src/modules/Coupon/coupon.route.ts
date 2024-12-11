@@ -5,6 +5,7 @@ import { CouponController } from './coupon.controller';
 import validateRequest from '../../middlewares/validateRequest';
 import { couponValidation } from './coupon.validation';
 
+
 const router = express.Router();
 
 router.post(
