@@ -1,6 +1,6 @@
-import httpStatus from "http-status";
-import AppError from "../../errors/appError";
-import prisma from "../../utils/prisma";
+import prisma from '../../utils/prisma';
+import AppError from '../../errors/appError';
+import httpStatus from 'http-status';
 
 const createCategory = async (payload: { category: string; image: string }) => {
   const isCategoryExists = await prisma.category.findUnique({
@@ -10,7 +10,7 @@ const createCategory = async (payload: { category: string; image: string }) => {
   });
 
   if (isCategoryExists) {
-    throw new AppError(httpStatus.BAD_REQUEST, "Category already exists!");
+    throw new AppError(httpStatus.BAD_REQUEST, 'Category already exists!');
   }
 
   const result = await prisma.category.create({
@@ -30,14 +30,14 @@ const getAllCategories = async () => {
 
 const updateCategory = async (
   categoryId: string,
-  payload: { category?: string; image?: string }
+  payload: { category?: string; image?: string },
 ) => {
   const isCategoryExists = await prisma.category.findUnique({
     where: { id: categoryId },
   });
 
   if (!isCategoryExists) {
-    throw new AppError(httpStatus.NOT_FOUND, "Category not found!");
+    throw new AppError(httpStatus.NOT_FOUND, 'Category not found!');
   }
 
   const updatedCategory = await prisma.category.update({
@@ -51,8 +51,37 @@ const updateCategory = async (
   return updatedCategory;
 };
 
+const deleteCategory = async (categoryId: string) => {
+  const isCategoryExists = await prisma.category.findUnique({
+    where: { id: categoryId },
+  });
+
+  if (!isCategoryExists) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Category not found!');
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    await tx.product.updateMany({
+      where: { categoryId },
+      data: { categoryId: null },
+    });
+
+    const deletedCategory = await tx.category.update({
+      where: { id: categoryId },
+      data: {
+        isDeleted: true,
+      },
+    });
+
+    return deletedCategory;
+  });
+
+  return result;
+};
+
 export const CategoryServices = {
   createCategory,
   getAllCategories,
   updateCategory,
+  deleteCategory,
 };
