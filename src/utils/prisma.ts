@@ -1,29 +1,28 @@
-/* eslint-disable no-console */ // * Disabling ESLint for console statements
-/* eslint-disable @typescript-eslint/no-explicit-any */ // * Disabling TypeScript explicit `any` warning for this file
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { PrismaClient } from '@prisma/client';
 
-import { PrismaClient } from "@prisma/client"; // * Importing Prisma Client for database interaction
-
-// !! Creating an instance of Prisma Client with logging configuration
 const prisma = new PrismaClient({
   log: [
     {
-      emit: "event", // !! Specifies that log events should be emitted
-      level: "query", // !! Logs database queries (useful for debugging)
+      emit: 'event',
+      level: 'query',
     },
     {
-      emit: "event", // !! Specifies that log events should be emitted
-      level: "error", // !! Logs errors for immediate attention
+      emit: 'event',
+      level: 'error',
     },
     {
-      emit: "event", // !! Specifies that log events should be emitted
-      level: "info", // !! Logs informational messages about Prisma operations
+      emit: 'event',
+      level: 'info',
     },
     {
-      emit: "event", // !! Specifies that log events should be emitted
-      level: "warn", // !! Logs warnings, indicating potential issues
+      emit: 'event',
+      level: 'warn',
     },
   ],
 });
 
-// * Exporting the configured Prisma client for use throughout the application
+
+
 export default prisma;
