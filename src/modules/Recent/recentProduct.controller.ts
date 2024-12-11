@@ -1,8 +1,9 @@
 import httpStatus from 'http-status';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
-import { IAuthUser } from '../users/user.interfaces';
+
 import { RecentProductViewServices } from './recentProduct.service';
+import { IAuthUser } from '../users/user.interfaces';
 
 const createRecentProduct = catchAsync(async (req, res) => {
   const result = await RecentProductViewServices.createRecentProducts(
@@ -19,7 +20,9 @@ const createRecentProduct = catchAsync(async (req, res) => {
 });
 
 const getAllRecentViewProducts = catchAsync(async (req, res) => {
-  const result = await RecentProductViewServices.getAllRecentProducts();
+  const result = await RecentProductViewServices.getAllRecentProducts(
+    req.user as IAuthUser,
+  );
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

@@ -1,4 +1,4 @@
-import { DiscountType } from '@prisma/client';
+
 
 export interface ICoupon {
   code: string;

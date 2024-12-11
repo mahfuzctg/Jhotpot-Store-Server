@@ -4,6 +4,7 @@ import { ICoupon } from './coupon.interface';
 import prisma from '../../utils/prisma';
 import { DiscountType } from '@prisma/client';
 
+
 const createCoupon = async (payload: ICoupon) => {
   if (payload.discountValue <= 0) {
     throw new AppError(
@@ -80,5 +81,5 @@ export const CouponServices = {
   getAllCoupons,
   updateCoupon,
   deleteCoupon,
-  // applyCoupon,
+ 
 };
