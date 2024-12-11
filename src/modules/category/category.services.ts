@@ -1,6 +1,7 @@
-import prisma from '../../utils/prisma';
-import AppError from '../../errors/appError';
+
 import httpStatus from 'http-status';
+import AppError from '../../errors/appError';
+import prisma from '../../utils/prisma';
 
 const createCategory = async (payload: { category: string; image: string }) => {
   const isCategoryExists = await prisma.category.findUnique({

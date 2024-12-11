@@ -27,7 +27,7 @@ router.get(
   RecentProductViewController.getAllRecentViewProducts,
 );
 
-router.post(
+router.delete(
   '/',
   auth(
     UserRole.SUPER_ADMIN,
