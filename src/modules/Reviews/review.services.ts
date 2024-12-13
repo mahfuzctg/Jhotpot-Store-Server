@@ -1,8 +1,9 @@
 import httpStatus from 'http-status';
 import AppError from '../../errors/appError';
 import prisma from '../../utils/prisma';
-import { IAuthUser } from '../Users/user.interface';
 import { TReview } from './review.interface';
+import { IAuthUser } from '../users/user.interfaces';
+
 
 const createReview = async (payload: TReview, user: IAuthUser) => {
   const customer = await prisma.customer.findUnique({

@@ -2,7 +2,8 @@ import httpStatus from 'http-status';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { ReviewServices } from './review.services';
-import { IAuthUser } from '../Users/user.interface';
+import { IAuthUser } from '../users/user.interfaces';
+
 
 const createReview = catchAsync(async (req, res) => {
   const result = await ReviewServices.createReview(
