@@ -1,11 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from 'http-status';
 import AppError from '../../errors/appError';
 import prisma from '../../utils/prisma';
 
+import { TOrder, TOrderFilterRequest } from './order.interface';
+import { initiatePayment } from '../../utils/payment';
+import { Coupon, PaymentStatus, Prisma } from '@prisma/client';
 
-
-import { Coupon, PaymentStatus } from '@prisma/client';
-import { TOrder } from './order.interface';
+import {
+  calculatePagination,
+  IPaginationOptions,
+} from '../../utils/calculatePagination';
 import { IAuthUser } from '../users/user.interfaces';
 
 const createOrder = async (payload: TOrder, user: IAuthUser) => {
@@ -68,6 +73,7 @@ const createOrder = async (payload: TOrder, user: IAuthUser) => {
       data: {
         customerId: customer.id,
         vendorId: vendor.id,
+        deliveryAddress: payload.deliveryAddress,
         transactionId: payload.transactionId,
         paymentStatus: PaymentStatus.PENDING,
         totalPrice: payload.totalPrice,
@@ -133,6 +139,72 @@ const createOrder = async (payload: TOrder, user: IAuthUser) => {
   return { paymentSession, order };
 };
 
+const getAllOrders = async (
+  filters: TOrderFilterRequest,
+  options: IPaginationOptions,
+) => {
+  const { limit, page, skip } = calculatePagination(options);
+
+  const andConditions: Prisma.OrderWhereInput[] = [];
+
+  if (Object.keys(filters).length > 0) {
+    const filterConditions = Object.keys(filters).map((key) => ({
+      [key]: {
+        equals: (filters as any)[key],
+      },
+    }));
+    andConditions.push(...filterConditions);
+  }
+
+  andConditions.push({
+    vendor: {
+      isDeleted: false,
+    },
+  });
+
+  andConditions.push({
+    customer: {
+      isDeleted: false,
+    },
+  });
+
+  const whereConditions: Prisma.OrderWhereInput =
+    andConditions.length > 0 ? { AND: andConditions } : {};
+
+  const result = await prisma.order.findMany({
+    where: whereConditions,
+    skip,
+    take: limit,
+    orderBy:
+      options.sortBy && options.sortOrder
+        ? { [options.sortBy]: options.sortOrder }
+        : { paymentStatus: 'asc' },
+    include: {
+      vendor: true,
+      customer: true,
+      orderDetails: {
+        include: {
+          product: true,
+        },
+      },
+    },
+  });
+
+  const total = await prisma.order.count({
+    where: whereConditions,
+  });
+
+  return {
+    meta: {
+      total,
+      page,
+      limit,
+    },
+    data: result,
+  };
+};
+
 export const OrderServices = {
   createOrder,
+  getAllOrders,
 };

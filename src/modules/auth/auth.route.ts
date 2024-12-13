@@ -1,24 +1,50 @@
-import express from "express"; // * Importing Express framework
+import express from 'express';
 import validateRequest, {
   validateRequestCookies,
-} from "../../middlewares/validateRequest"; // * Middleware for validating requests and cookies
-import { AuthControllers } from "./auth.controller"; // * Importing authentication controller methods
-import { AuthValidation } from "./auth.validation"; // * Importing authentication validation schemas
+} from '../../middlewares/validateRequest';
+import { AuthControllers } from './auth.controller';
+import { AuthValidation } from './auth.validation';
+import auth from '../../middlewares/auth';
+import { UserRole } from '@prisma/client';
 
-const router = express.Router(); // * Initializing the Express router
+const router = express.Router();
 
-// !! Route to handle user login
 router.post(
-  "/login",
-  validateRequest(AuthValidation.loginValidationSchema), // !! Middleware to validate request body against the login schema
-  AuthControllers.loginUser // !! Controller to handle the login logic
+  '/login',
+  validateRequest(AuthValidation.loginValidationSchema),
+  AuthControllers.loginUser,
 );
 
-// !! Route to handle refreshing the access token
+// router.post('/social-login', AuthControllers.socialLogin);
+
 router.post(
-  "/refresh-token",
-  validateRequestCookies(AuthValidation.refreshTokenValidationSchema), // !! Middleware to validate cookies against the refresh token schema
-  AuthControllers.refreshToken // !! Controller to handle token refresh logic
+  '/forget-password',
+  validateRequest(AuthValidation.forgetPasswordValidationSchema),
+  AuthControllers.forgotPassword,
 );
 
-export const AuthRoutes = router; // * Exporting the router for use in the main application
+router.post(
+  '/reset-password',
+  validateRequest(AuthValidation.resetPasswordValidationSchema),
+  AuthControllers.resetPassword,
+);
+
+router.post(
+  '/refresh-token',
+  validateRequestCookies(AuthValidation.refreshTokenValidationSchema),
+  AuthControllers.refreshToken,
+);
+
+router.post(
+  '/change-password',
+  auth(
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
+    UserRole.CUSTOMER,
+    UserRole.VENDOR,
+  ),
+  validateRequest(AuthValidation.changePasswordValidationSchema),
+  AuthControllers.changePassword,
+);
+
+export const AuthRoutes = router;

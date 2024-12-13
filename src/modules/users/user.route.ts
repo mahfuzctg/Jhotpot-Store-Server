@@ -1,10 +1,9 @@
 import express from 'express';
-
+import { userController } from './user.controller';
 import validateRequest from '../../middlewares/validateRequest';
 import { userValidation } from './user.validation';
 import auth from '../../middlewares/auth';
 import { UserRole } from '@prisma/client';
-import { userController } from './user.controller';
 
 const router = express.Router();
 
@@ -67,6 +66,18 @@ router.delete(
   '/unfollow',
   auth(UserRole.CUSTOMER),
   userController.unfollowVendor,
+);
+
+router.patch(
+  '/update-customer',
+  auth(UserRole.CUSTOMER),
+  userController.updateCustomer,
+);
+
+router.patch(
+  '/update-vendor',
+  auth(UserRole.VENDOR),
+  userController.updateVendor,
 );
 
 

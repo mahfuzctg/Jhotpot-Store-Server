@@ -1,6 +1,9 @@
-export type TOrder = {
+
+
+  export type TOrder = {
     vendorId: string;
     transactionId: string;
+    deliveryAddress: string;
     totalPrice: number;
     coupon?: string;
     orderDetails: {
@@ -8,4 +11,9 @@ export type TOrder = {
       quantity: number;
       pricePerUnit: number;
     }[];
+  };
+
+  export type TOrderFilterRequest = {
+    vendorId?: string;
+    customerId?: string;
   };

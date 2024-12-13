@@ -5,8 +5,7 @@ import config from '../../config';
 import bcrypt from 'bcryptjs';
 import { UserRole, UserStatus } from '@prisma/client';
 import { createToken } from '../../utils/verifyJWT';
-import { IAuthUser } from './user.interfaces';
-
+import { IAuthUser } from './user.interface';
 
 const createAdmin = async (payload: {
   name: string;
@@ -252,11 +251,31 @@ const getMyProfile = async (user: IAuthUser) => {
       where: {
         email: userInfo.email,
       },
+      include: {
+        products: true,
+        orders: true,
+        followers: {
+          include: {
+            customer: true,
+          },
+        },
+      },
     });
   } else if (userInfo.role === UserRole.CUSTOMER) {
     profileInfo = await prisma.customer.findUnique({
       where: {
         email: userInfo.email,
+      },
+      include: {
+        customerCoupons: true,
+        orders: true,
+        reviews: true,
+        follows: {
+          include: {
+            vendor: true,
+          },
+        },
+        recentProductView: true,
       },
     });
   }
@@ -371,6 +390,77 @@ const unfollowVendor = async (
   return unfollow;
 };
 
+const updateCustomer = async (
+  payload: {
+    name?: string;
+    profilePhoto?: string;
+    address?: string;
+    phone?: string;
+  },
+  userData: IAuthUser,
+) => {
+  const customer = await prisma.customer.findUnique({
+    where: {
+      email: userData?.email,
+      isDeleted: false,
+    },
+  });
+
+  if (!customer) {
+    throw new AppError(httpStatus.NOT_FOUND, "User doesn't exist!");
+  }
+
+  const result = await prisma.customer.update({
+    where: {
+      email: customer.email,
+    },
+    data: payload,
+    include: {
+      follows: true,
+      orders: true,
+      reviews: true,
+      recentProductView: true,
+    },
+  });
+
+  return result;
+};
+
+const updateVendor = async (
+  payload: {
+    name?: string;
+    shopName?: string;
+    logo?: string;
+    description?: string;
+  },
+  userData: IAuthUser,
+) => {
+  const vendor = await prisma.vendor.findUnique({
+    where: {
+      email: userData?.email,
+      isDeleted: false,
+    },
+  });
+
+  if (!vendor) {
+    throw new AppError(httpStatus.NOT_FOUND, "User doesn't exist!");
+  }
+
+  const result = await prisma.vendor.update({
+    where: {
+      email: vendor.email,
+    },
+    data: payload,
+    include: {
+      orders: true,
+      products: true,
+      followers: true,
+    },
+  });
+
+  return result;
+};
+
 export const userService = {
   createAdmin,
   createVendor,
@@ -380,4 +470,6 @@ export const userService = {
   getCustomerUser,
   followVendor,
   unfollowVendor,
+  updateCustomer,
+  updateVendor,
 };

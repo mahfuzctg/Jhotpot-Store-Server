@@ -1,48 +1,42 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */ // * Disables the rule for explicit `any` type usage
-/* eslint-disable @typescript-eslint/no-unused-vars */ // * Disables the rule for unused variables
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import bcrypt from 'bcryptjs';
+import httpStatus from 'http-status';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import config from '../../config';
+import { createToken, verifyToken } from '../../utils/verifyJWT';
+import { TLoginUser } from './auth.interface';
+import AppError from '../../errors/appError';
+import { UserStatus } from '@prisma/client';
+import prisma from '../../utils/prisma';
+import { IAuthUser } from '../users/user.interfaces';
+import { sendEmail } from '../../utils/sendEmail';
 
-import { UserStatus } from "@prisma/client"; // * Prisma user status enums
-import bcrypt from "bcryptjs"; // * Library for hashing passwords and comparing hashed values
-import httpStatus from "http-status"; // * HTTP status codes
-import jwt, { JwtPayload } from "jsonwebtoken"; // * Library for creating and verifying JSON Web Tokens
-import config from "../../config"; // * Application configuration
-import AppError from "../../errors/appError"; // * Custom error handling class
 
-import prisma from "../../utils/prisma"; // * Prisma client instance
-import { createToken } from "../../utils/verifyJWT"; // * Utility to create JWTs
-import { TLoginUser } from "./auth.interface";
-
-/**
- * AuthService function to handle user login.
- * @param payload - Object containing the user's login details (email and password)
- * @returns Access token and refresh token
- */
 const loginUser = async (payload: TLoginUser) => {
-  // * Retrieve user details from the database based on email and status
   const userData = await prisma.user.findUnique({
     where: {
       email: payload.email,
-      status: UserStatus.ACTIVE, // * Ensure the user is active
+      status: UserStatus.ACTIVE,
     },
   });
 
-  // ! Throw an error if the user is not found
   if (!userData) {
-    throw new AppError(httpStatus.BAD_REQUEST, "User not found!");
+    throw new AppError(httpStatus.BAD_REQUEST, 'User not found!');
   }
 
-  // * Verify the user's password
+  //checking if the password is correct
   const isPasswordMatched = await bcrypt.compare(
     payload.password,
-    userData.password
+    userData.password,
   );
 
-  // ! Throw an error if the password is incorrect
   if (!isPasswordMatched) {
-    throw new AppError(httpStatus.FORBIDDEN, "Password do not matched");
+    throw new AppError(httpStatus.FORBIDDEN, 'Password do not matched');
   }
 
-  // !! Create tokens (access and refresh) for authenticated users
+  //create token and sent to the  client
   const jwtPayload = {
     id: userData.id,
     email: userData.email,
@@ -50,15 +44,15 @@ const loginUser = async (payload: TLoginUser) => {
   };
 
   const accessToken = createToken(
-    jwtPayload, // * Payload to encode in the access token
-    config.jwt_access_secret as string, // * Secret key for signing the token
-    config.jwt_access_expires_in as string // * Token expiration duration
+    jwtPayload,
+    config.jwt_access_secret as string,
+    config.jwt_access_expires_in as string,
   );
 
   const refreshToken = createToken(
-    jwtPayload, // * Payload to encode in the refresh token
-    config.jwt_refresh_secret as string, // * Secret key for signing the token
-    config.jwt_refresh_expires_in as string // * Token expiration duration
+    jwtPayload,
+    config.jwt_refresh_secret as string,
+    config.jwt_refresh_expires_in as string,
   );
 
   return {
@@ -67,29 +61,145 @@ const loginUser = async (payload: TLoginUser) => {
   };
 };
 
-/**
- * AuthService function to refresh the access token.
- * @param token - Refresh token provided by the client
- * @returns New access token
- */
+// const socialLogin = async (payload: TSocialLoginUser) => {
+//   const user = await User.isUserExistsByEmail(payload?.email);
+
+//   if (!user) {
+//     payload.role = USER_ROLE.USER;
+
+//     // create new user
+
+//     const newUser = await User.create(payload);
+
+//     //create token and sent to the  client
+
+//     const jwtPayload = {
+//       _id: newUser._id,
+//       name: newUser.name,
+//       email: newUser.email,
+//       profilePhoto: newUser.profilePhoto,
+//       role: newUser.role,
+//       status: newUser.status,
+//       followers: newUser.followers,
+//       following: newUser.following,
+//       isVerified: newUser.isVerified,
+//       totalUpvote: newUser.totalUpvote,
+//       postCount: newUser.postCount,
+//       premiumStart: newUser.premiumStart,
+//       premiumEnd: newUser.premiumEnd,
+//     };
+
+//     const accessToken = createToken(
+//       jwtPayload,
+//       config.jwt_access_secret as string,
+//       config.jwt_access_expires_in as string,
+//     );
+
+//     const refreshToken = createToken(
+//       jwtPayload,
+//       config.jwt_refresh_secret as string,
+//       config.jwt_refresh_expires_in as string,
+//     );
+
+//     return {
+//       accessToken,
+//       refreshToken,
+//     };
+//   }
+
+//   //create token and sent to the  client
+
+//   const jwtPayload = {
+//     _id: user._id,
+//     name: user.name,
+//     email: user.email,
+//     profilePhoto: user.profilePhoto,
+//     role: user.role,
+//     status: user.status,
+//     followers: user.followers,
+//     following: user.following,
+//     isVerified: user.isVerified,
+//     totalUpvote: user.totalUpvote,
+//     postCount: user.postCount,
+//     premiumStart: user.premiumStart,
+//     premiumEnd: user.premiumEnd,
+//   };
+
+//   const accessToken = createToken(
+//     jwtPayload,
+//     config.jwt_access_secret as string,
+//     config.jwt_access_expires_in as string,
+//   );
+
+//   const refreshToken = createToken(
+//     jwtPayload,
+//     config.jwt_refresh_secret as string,
+//     config.jwt_refresh_expires_in as string,
+//   );
+
+//   return {
+//     accessToken,
+//     refreshToken,
+//   };
+// };
+
+// const resetPassword = async (
+//   payload: { email: string; newPassword: string },
+//   token: string,
+// ) => {
+//   // checking if the user is exist
+//   const user = await User.isUserExistsByEmail(payload.email);
+
+//   if (!user) {
+//     throw new AppError(httpStatus.NOT_FOUND, 'This user is not found!');
+//   }
+
+//   const decoded = jwt.verify(
+//     token,
+//     config.jwt_access_secret as string,
+//   ) as JwtPayload;
+
+//   if (payload.email !== decoded.email) {
+//     throw new AppError(httpStatus.FORBIDDEN, 'You are forbidden!');
+//   }
+
+//   //hash new password
+//   const newHashedPassword = await bcrypt.hash(
+//     payload.newPassword,
+//     Number(config.bcrypt_salt_rounds),
+//   );
+
+//   await User.findOneAndUpdate(
+//     {
+//       email: decoded.email,
+//       role: decoded.role,
+//     },
+//     {
+//       password: newHashedPassword,
+//       passwordChangedAt: new Date(),
+//     },
+//   );
+
+//   return null;
+// };
+
 const refreshToken = async (token: string) => {
-  // ! Verify the refresh token. Throws an error if the token is invalid or expired.
+  // checking if the given token is valid
   const decoded = jwt.verify(
     token,
-    config.jwt_refresh_secret as string
+    config.jwt_refresh_secret as string,
   ) as JwtPayload;
 
-  const { email } = decoded; // * Extract email from the decoded token
+  const { email } = decoded;
 
-  // !! Ensure the user exists and is active
+  // checking if the user is exist
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
       email: email,
-      status: UserStatus.ACTIVE, // * Check if user is active
+      status: UserStatus.ACTIVE,
     },
   });
 
-  // !! Generate a new access token
   const jwtPayload = {
     id: userData.id,
     email: userData.email,
@@ -97,18 +207,140 @@ const refreshToken = async (token: string) => {
   };
 
   const accessToken = createToken(
-    jwtPayload, // * Payload to encode in the new access token
-    config.jwt_access_secret as string, // * Secret key for signing the token
-    config.jwt_access_expires_in as string // * Token expiration duration
+    jwtPayload,
+    config.jwt_access_secret as string,
+    config.jwt_access_expires_in as string,
   );
 
   return {
-    accessToken, // * Return the new access token
+    accessToken,
   };
 };
 
-// * Exporting AuthServices for use in controllers and routes
+const changePassword = async (
+  payload: {
+    oldPassword: string;
+    newPassword: string;
+  },
+  user: IAuthUser,
+) => {
+  const userData = await prisma.user.findUnique({
+    where: {
+      email: user?.email,
+      status: UserStatus.ACTIVE,
+    },
+  });
+
+  if (!userData) {
+    throw new AppError(httpStatus.BAD_REQUEST, "User doesn't exists!");
+  }
+
+  const isCorrectPassword: boolean = await bcrypt.compare(
+    payload.oldPassword,
+    userData.password,
+  );
+
+  if (!isCorrectPassword) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Password incorrect!');
+  }
+
+  const hashedPassword: string = await bcrypt.hash(
+    payload.newPassword,
+    Number(config.bcrypt_salt_rounds),
+  );
+
+  await prisma.user.update({
+    where: {
+      email: userData.email,
+    },
+    data: {
+      password: hashedPassword,
+    },
+  });
+
+  return {
+    message: 'Password changed successfully!',
+  };
+};
+
+const forgotPassword = async (payload: { email: string }) => {
+  const userData = await prisma.user.findUnique({
+    where: {
+      email: payload?.email,
+      status: UserStatus.ACTIVE,
+    },
+  });
+
+  if (!userData) {
+    throw new AppError(httpStatus.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  const jwtPayload = {
+    id: userData.id,
+    email: userData.email,
+    role: userData.role,
+  };
+
+  const resetToken = createToken(
+    jwtPayload,
+    config.jwt_access_secret as string,
+    '20m',
+  );
+
+  const resetUILink = `${config.reset_pass_ui_link}?email=${userData.email}&token=${resetToken} `;
+
+  await sendEmail(userData?.email, resetUILink);
+};
+
+const resetPassword = async (
+  payload: { email: string; newPassword: string },
+  token: string,
+) => {
+  console.log({ token, payload });
+
+  const userData = await prisma.user.findUnique({
+    where: {
+      email: payload.email,
+      status: UserStatus.ACTIVE,
+    },
+  });
+
+  if (!userData) {
+    throw new AppError(httpStatus.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  const decoded = verifyToken(
+    token,
+    config.jwt_access_secret as string,
+  ) as JwtPayload;
+
+  const { email } = decoded;
+
+  if (payload?.email !== email) {
+    throw new AppError(httpStatus.FORBIDDEN, 'You are forbidden!');
+  }
+  // hash password
+  const newHashedPassword = await bcrypt.hash(
+    payload.newPassword,
+    Number(config.bcrypt_salt_rounds),
+  );
+
+  // update into database
+  await prisma.user.update({
+    where: {
+      email: payload.email,
+    },
+    data: {
+      password: newHashedPassword,
+    },
+  });
+};
+
 export const AuthServices = {
-  loginUser, // * Login functionality
-  refreshToken, // * Token refresh functionality
+  loginUser,
+  changePassword,
+  refreshToken,
+  //   socialLogin,
+  forgotPassword,
+  resetPassword,
 };

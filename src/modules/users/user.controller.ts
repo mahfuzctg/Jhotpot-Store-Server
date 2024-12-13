@@ -65,33 +65,6 @@ const createCustomer = catchAsync(async (req, res) => {
   });
 });
 
-// const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
-//   // console.log(req.query)
-//   const filters = pick(req.query, userFilterableFields);
-//   const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
-
-//   const result = await userService.getAllFromDB(filters, options);
-
-//   sendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     success: true,
-//     message: 'Users data fetched!',
-//     meta: result.meta,
-//     data: result.data,
-//   });
-// });
-
-// const changeProfileStatus = catchAsync(async (req: Request, res: Response) => {
-//   const { id } = req.params;
-//   const result = await userService.changeProfileStatus(id, req.body);
-
-//   sendResponse(res, {
-//     statusCode: httpStatus.OK,
-//     success: true,
-//     message: 'Users profile status changed!',
-//     data: result,
-//   });
-// });
 
 const getMyProfile = catchAsync(async (req, res) => {
   const result = await userService.getMyProfile(req.user as IAuthUser);
@@ -158,7 +131,33 @@ const unfollowVendor = catchAsync(async (req, res) => {
   });
 });
 
+const updateVendor = catchAsync(async (req, res) => {
+  const result = await userService.updateVendor(
+    req.body,
+    req.user as IAuthUser,
+  );
 
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Vendor profile updated successfully!',
+    data: result,
+  });
+});
+
+const updateCustomer = catchAsync(async (req, res) => {
+  const result = await userService.updateCustomer(
+    req.body,
+    req.user as IAuthUser,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Customer profile updated successfully!',
+    data: result,
+  });
+});
 
 export const userController = {
   createAdmin,
@@ -171,5 +170,6 @@ export const userController = {
   getCustomerUser,
   followVendor,
   unfollowVendor,
-  //   updateMyProfie,
+  updateCustomer,
+  updateVendor,
 };
