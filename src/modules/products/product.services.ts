@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Prisma } from "@prisma/client";
+import { Prisma } from '@prisma/client';
 import {
   calculatePagination,
   IPaginationOptions,
-} from "../../utils/calculatePagination";
-import prisma from "../../utils/prisma";
-import { IAuthUser } from "../users/user.interfaces";
-import { TProductFilterRequest, TProducts } from "./product.interface";
+} from '../../utils/calculatePagination';
+import prisma from '../../utils/prisma';
+
+import { TProductFilterRequest, TProducts } from './product.interface';
+import { IAuthUser } from '../users/user.interfaces';
 
 const createProduct = async (payload: TProducts, user: IAuthUser) => {
   const vendor = await prisma.vendor.findUniqueOrThrow({
@@ -40,7 +41,7 @@ const createProduct = async (payload: TProducts, user: IAuthUser) => {
 
 const getAllProducts = async (
   filters: TProductFilterRequest,
-  options: IPaginationOptions
+  options: IPaginationOptions,
 ) => {
   const { limit, page, skip } = calculatePagination(options);
   const {
@@ -61,20 +62,20 @@ const getAllProducts = async (
         {
           name: {
             contains: searchTerm,
-            mode: "insensitive",
+            mode: 'insensitive',
           },
         },
         {
           description: {
             contains: searchTerm,
-            mode: "insensitive",
+            mode: 'insensitive',
           },
         },
         {
           category: {
             name: {
               contains: searchTerm,
-              mode: "insensitive",
+              mode: 'insensitive',
             },
           },
         },
@@ -97,7 +98,7 @@ const getAllProducts = async (
 
   // Filter by Flash Sale
   const flashSaleBoolean =
-    typeof flashSale === "string" ? flashSale === "true" : undefined;
+    typeof flashSale === 'string' ? flashSale === 'true' : undefined;
 
   if (flashSaleBoolean !== undefined) {
     andConditions.push({
@@ -153,7 +154,7 @@ const getAllProducts = async (
     orderBy:
       options.sortBy && options.sortOrder
         ? { [options.sortBy]: options.sortOrder }
-        : { price: "asc" },
+        : { price: 'asc' },
     include: {
       category: true,
       vendor: true,
@@ -185,6 +186,7 @@ const getProductById = async (productId: string) => {
       category: true,
       vendor: true,
       reviews: true,
+      orderDetails: true,
     },
   });
 
@@ -193,7 +195,7 @@ const getProductById = async (productId: string) => {
 
 const updateProduct = async (
   productId: string,
-  updateData: Prisma.ProductUpdateInput
+  updateData: Prisma.ProductUpdateInput,
 ) => {
   await prisma.product.findUniqueOrThrow({
     where: { id: productId },

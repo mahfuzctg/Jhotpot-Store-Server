@@ -5,7 +5,8 @@ import config from '../../config';
 import bcrypt from 'bcryptjs';
 import { UserRole, UserStatus } from '@prisma/client';
 import { createToken } from '../../utils/verifyJWT';
-import { IAuthUser } from './user.interface';
+import { IAuthUser } from './user.interfaces';
+
 
 const createAdmin = async (payload: {
   name: string;
