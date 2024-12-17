@@ -5,6 +5,7 @@ import { userService } from './user.service';
 import config from '../../config';
 
 import pick from '../../utils/pick';
+import { IAuthUser } from './user.interfaces';
 
 const createAdmin = catchAsync(async (req, res) => {
   const result = await userService.createAdmin(req.body);
