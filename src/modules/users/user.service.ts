@@ -3,10 +3,13 @@ import AppError from '../../errors/appError';
 import prisma from '../../utils/prisma';
 import config from '../../config';
 import bcrypt from 'bcryptjs';
-import { UserRole, UserStatus } from '@prisma/client';
+import { Prisma, UserRole, UserStatus } from '@prisma/client';
 import { createToken } from '../../utils/verifyJWT';
-import { IAuthUser } from './user.interfaces';
-
+import { IAuthUser } from './user.interface';
+import {
+  calculatePagination,
+  IPaginationOptions,
+} from '../../utils/calculatePagination';
 
 const createAdmin = async (payload: {
   name: string;
@@ -253,7 +256,11 @@ const getMyProfile = async (user: IAuthUser) => {
         email: userInfo.email,
       },
       include: {
-        products: true,
+        products: {
+          include: {
+            category: true,
+          },
+        },
         orders: true,
         followers: {
           include: {
@@ -462,6 +469,133 @@ const updateVendor = async (
   return result;
 };
 
+const getAllUsers = async (
+  filters: { role?: UserRole },
+  options: IPaginationOptions,
+) => {
+  const { limit, page, skip } = calculatePagination(options);
+  const { role } = filters;
+
+  const andConditions: Prisma.UserWhereInput[] = [];
+
+  if (role) {
+    andConditions.push({
+      role: {
+        equals: role,
+      },
+    });
+  }
+
+  // andConditions.push({
+  //   status: 'ACTIVE',
+  // });
+
+  const whereConditions: Prisma.UserWhereInput =
+    andConditions.length > 0 ? { AND: andConditions } : {};
+
+  const users = await prisma.user.findMany({
+    where: whereConditions,
+    skip,
+    take: limit,
+    orderBy:
+      options.sortBy && options.sortOrder
+        ? { [options.sortBy]: options.sortOrder }
+        : { createdAt: 'desc' },
+    include: {
+      admin: true,
+      vendor: true,
+      customer: true,
+    },
+  });
+
+  const total = await prisma.user.count({
+    where: whereConditions,
+  });
+
+  return {
+    meta: {
+      total,
+      page,
+      limit,
+    },
+    data: users,
+  };
+};
+
+const blockUser = async (email: string) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, "This user doesn't exist!");
+  }
+
+  const { role } = user;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { email },
+      data: { status: 'BLOCKED' },
+    });
+
+    if (role === 'VENDOR') {
+      await tx.vendor.updateMany({
+        where: { email },
+        data: { isDeleted: true },
+      });
+    } else if (role === 'CUSTOMER') {
+      await tx.customer.updateMany({
+        where: { email },
+        data: { isDeleted: true },
+      });
+    } else {
+      throw new Error('Invalid role for blocking');
+    }
+  });
+
+  return { message: `User with email ${email} has been blocked` };
+};
+
+const unblockUser = async (email: string) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, "This user doesn't exist!");
+  }
+
+  const { role } = user;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { email },
+      data: { status: 'ACTIVE' },
+    });
+
+    if (role === 'VENDOR') {
+      await tx.vendor.updateMany({
+        where: { email },
+        data: { isDeleted: false },
+      });
+    } else if (role === 'CUSTOMER') {
+      await tx.customer.updateMany({
+        where: { email },
+        data: { isDeleted: false },
+      });
+    } else {
+      throw new Error('Invalid role for blocking');
+    }
+  });
+
+  return { message: `User with email ${email} has been unblocked` };
+};
+
 export const userService = {
   createAdmin,
   createVendor,
@@ -473,4 +607,7 @@ export const userService = {
   unfollowVendor,
   updateCustomer,
   updateVendor,
+  getAllUsers,
+  blockUser,
+  unblockUser,
 };

@@ -144,6 +144,12 @@ const getAllProducts = async (
     isDeleted: false,
   });
 
+  andConditions.push({
+    category: {
+      isDeleted: false,
+    },
+  });
+
   const whereConditions: Prisma.ProductWhereInput =
     andConditions.length > 0 ? { AND: andConditions } : {};
 

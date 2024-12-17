@@ -57,5 +57,5 @@ export const CouponController = {
   getAllCoupons,
   updateCoupon,
   deleteCoupon,
-  // applyCoupon,
+
 };

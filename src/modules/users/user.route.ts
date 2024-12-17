@@ -7,7 +7,11 @@ import { UserRole } from '@prisma/client';
 
 const router = express.Router();
 
-
+router.get(
+  '/',
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  userController.getAllUsers,
+);
 
 router.get(
   '/me',
@@ -78,6 +82,18 @@ router.patch(
   '/update-vendor',
   auth(UserRole.VENDOR),
   userController.updateVendor,
+);
+
+router.patch(
+  '/block-user/:email',
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  userController.blockUser,
+);
+
+router.patch(
+  '/unblock-user/:email',
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  userController.unblockUser,
 );
 
 

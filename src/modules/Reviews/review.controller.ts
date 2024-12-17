@@ -4,7 +4,6 @@ import sendResponse from '../../utils/sendResponse';
 import { ReviewServices } from './review.services';
 import { IAuthUser } from '../users/user.interfaces';
 
-
 const createReview = catchAsync(async (req, res) => {
   const result = await ReviewServices.createReview(
     req.body,

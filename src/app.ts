@@ -16,7 +16,7 @@ const app: Application = express(); // Initialize an express application
 // CORS configuration - Allow cross-origin requests from specific origin and enable credentials (cookies, tokens)
 app.use(
   cors({
-    origin: ["http://localhost:3000"], // Allow requests from localhost:3000 (frontend)
+    origin: ["http://localhost:3000", "https://jhotpot-store-client.vercel.app"], // Allow requests from localhost:3000 (frontend)
     credentials: true, // Allow sending cookies and authentication headers
   })
 );

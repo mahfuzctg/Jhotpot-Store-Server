@@ -1,8 +1,9 @@
 export const productFilterableFields: string[] = [
-  "searchTerm",
-  "vendorId",
-  "minPrice",
-  "maxPrice",
-  "inventory",
-  "flashSale",
+  'searchTerm',
+  'vendorId',
+  'minPrice',
+  'maxPrice',
+  'category',
+  'inventory',
+  'flashSale',
 ];

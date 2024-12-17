@@ -3,8 +3,8 @@ import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { userService } from './user.service';
 import config from '../../config';
-import { IAuthUser } from './user.interfaces';
 
+import pick from '../../utils/pick';
 
 const createAdmin = catchAsync(async (req, res) => {
   const result = await userService.createAdmin(req.body);
@@ -65,6 +65,44 @@ const createCustomer = catchAsync(async (req, res) => {
   });
 });
 
+const getAllUsers = catchAsync(async (req, res) => {
+  const filters = pick(req.query, ['role', 'status']); // Filterable fields for users
+  const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']); // Pagination and sorting options
+
+  const result = await userService.getAllUsers(filters, options);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Users retrieved successfully!',
+    meta: result.meta,
+    data: result.data,
+  });
+});
+
+const blockUser = catchAsync(async (req, res) => {
+  const { email } = req.params;
+  const result = await userService.blockUser(email);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Users profile status changed!',
+    data: result,
+  });
+});
+
+const unblockUser = catchAsync(async (req, res) => {
+  const { email } = req.params;
+  const result = await userService.unblockUser(email);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Users profile status changed!',
+    data: result,
+  });
+});
 
 const getMyProfile = catchAsync(async (req, res) => {
   const result = await userService.getMyProfile(req.user as IAuthUser);
@@ -163,8 +201,7 @@ export const userController = {
   createAdmin,
   createVendor,
   createCustomer,
-  //   getAllFromDB,
-  //   changeProfileStatus,
+  getAllUsers,
   getMyProfile,
   getVendorUser,
   getCustomerUser,
@@ -172,4 +209,6 @@ export const userController = {
   unfollowVendor,
   updateCustomer,
   updateVendor,
+  blockUser,
+  unblockUser,
 };

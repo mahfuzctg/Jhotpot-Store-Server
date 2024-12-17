@@ -40,7 +40,7 @@ export const sendEmail = async (to: string, resetLink: string) => {
         <a href="${resetLink}" style="display: inline-block; padding: 10px 15px; margin-top: 10px; background-color: #f5840c; color: white; text-decoration: none; border-radius: 5px;">Reset Your Password</a>
         <p>If you did not request a password reset, please ignore this email or <a href="mailto:support@traveltrove.com" style="color: #f5840c; text-decoration: none;">contact our support team</a>.</p>
         <p>Thank you,</p>
-        <p>The Shoply Team</p>
+        <p>The Jhotpot-store Team</p>
         <footer style="margin-top: 20px; font-size: 12px; color: #666;">
           <p>Jhotpot-store, Inc. | 1234 Street Address | City, State ZIP</p>
         </footer>

@@ -1,43 +1,43 @@
-import { UserRole } from "@prisma/client";
-import express from "express";
-import auth from "../../middlewares/auth";
-import validateRequest from "../../middlewares/validateRequest";
-import { ProductController } from "./product.controller";
-import { ProductValidation } from "./product.validation";
+import express from 'express';
+import auth from '../../middlewares/auth';
+import { UserRole } from '@prisma/client';
+import validateRequest from '../../middlewares/validateRequest';
+import { ProductController } from './product.controller';
+import { ProductValidation } from './product.validation';
 
 const router = express.Router();
 
 router.post(
-  "/",
+  '/',
   auth(UserRole.VENDOR),
   validateRequest(ProductValidation.createProductValidation),
-  ProductController.createProduct
+  ProductController.createProduct,
 );
 
 router.get(
-  "/:productId",
+  '/:productId',
   auth(
     UserRole.VENDOR,
     UserRole.SUPER_ADMIN,
     UserRole.ADMIN,
-    UserRole.CUSTOMER
+    UserRole.CUSTOMER,
   ),
-  ProductController.getSingleProduct
+  ProductController.getSingleProduct,
 );
 
 router.patch(
-  "/:productId",
+  '/:productId',
   auth(UserRole.VENDOR),
   validateRequest(ProductValidation.updateProductValidation),
-  ProductController.updateProduct
+  ProductController.updateProduct,
 );
 
 router.delete(
-  "/:productId",
+  '/:productId',
   auth(UserRole.VENDOR),
-  ProductController.deleteProduct
+  ProductController.deleteProduct,
 );
 
-router.get("/", ProductController.getAllProducts);
+router.get('/', ProductController.getAllProducts);
 
 export const ProductRoutes = router;

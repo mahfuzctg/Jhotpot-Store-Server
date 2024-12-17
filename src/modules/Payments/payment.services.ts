@@ -2,9 +2,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { join } from 'path';
 import { readFileSync } from 'fs';
-
-import prisma from '../../utils/prisma';
 import { verifyPayment } from '../../utils/payment';
+import prisma from '../../utils/prisma';
 
 const confirmationService = async (transactionId: string, status: string) => {
   const verifyResponse = await verifyPayment(transactionId);

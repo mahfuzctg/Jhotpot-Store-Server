@@ -1,223 +1,202 @@
+// Generator for Prisma Client (automatically generates a JS client)
 generator client {
   provider = "prisma-client-js"
 }
 
+// Database connection settings
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-
+  provider = "postgresql"  // PostgreSQL database
+  url      = env("DATABASE_URL")  // Database URL from environment variable
 }
 
-// User model: Represents a general user in the system with roles and status.
+// User model: Represents a user in the system
 model User {
-  id                 String     @id @default(uuid()) // Unique identifier
-  email              String     @unique              // User's unique email
-  password           String                         // User's password
-  role               UserRole                       // Role of the user (e.g., Admin, Vendor, etc.)
-  status             UserStatus @default(ACTIVE)     // Current account status
-  createdAt          DateTime   @default(now())      // Record creation timestamp
-  updatedAt          DateTime   @updatedAt           // Record update timestamp
-  admin              Admin?                          // Relation to Admin
-  vendor             Vendor?                         // Relation to Vendor
-  customer           Customer?                       // Relation to Customer
-
-  @@map("users")
+  id        String     @id @default(uuid())  // Unique identifier (UUID)
+  email     String     @unique  // Unique email
+  password  String     // User password
+  role      UserRole  // User role (Admin, Vendor, Customer, etc.)
+  status    UserStatus @default(ACTIVE) // Default status is ACTIVE
+  createdAt DateTime   @default(now())  // Timestamp for creation
+  updatedAt DateTime   @updatedAt  // Timestamp for last update
+  admin     Admin?     // Relation to Admin
+  vendor    Vendor?    // Relation to Vendor
+  customer  Customer?  // Relation to Customer
+  @@map("users")  // Map model to "users" table in DB
 }
 
-// Admin model: Stores admin-specific details.
+// Admin model: Represents an admin in the system
 model Admin {
-  id            String   @id @default(uuid())       // Unique identifier
-  name          String                           // Admin's name
-  email         String   @unique                  // Admin's unique email
-  profilePhoto  String?                          // Optional profile photo
-  isDeleted     Boolean  @default(false)          // Soft-delete flag
-  createdAt     DateTime @default(now())          // Record creation timestamp
-  updatedAt     DateTime @updatedAt               // Record update timestamp
-
-  user User @relation(fields: [email], references: [email]) // Link to User model
-
-  @@map("admins")
+  id           String   @id @default(uuid())  // Unique identifier (UUID)
+  name         String   // Admin's name
+  email        String   @unique  // Unique email
+  profilePhoto String?  // Optional profile photo
+  isDeleted    Boolean  @default(false)  // Indicates if the admin is deleted
+  createdAt    DateTime @default(now())  // Timestamp for creation
+  updatedAt    DateTime @updatedAt  // Timestamp for last update
+  user         User     @relation(fields: [email], references: [email])  // Relation to User
+  @@map("admins")  // Map model to "admins" table in DB
 }
 
-// Vendor model: Contains vendor-specific details, including relationships to products and orders.
+// Vendor model: Represents a vendor in the system
 model Vendor {
-  id            String   @id @default(uuid())       // Unique identifier
-  name          String                            // Vendor's name
-  email         String   @unique                  // Vendor's unique email
-  shopName      String?                           // Optional shop name
-  logo          String?                           // Optional shop logo
-  description   String?                           // Optional shop description
-  isDeleted     Boolean  @default(false)          // Soft-delete flag
-  createdAt     DateTime @default(now())          // Record creation timestamp
-  updatedAt     DateTime @updatedAt               // Record update timestamp
-  products      Product[]                         // Relationship to products
-  orders        Order[]                           // Relationship to orders
-  followers     Follow[]                          // List of followers
-  review        Review[]                          // List of reviews
-
-  user User @relation(fields: [email], references: [email]) // Link to User model
-
-  @@map("vendors")
+  id          String   @id @default(uuid())  // Unique identifier (UUID)
+  name        String   // Vendor's name
+  email       String   @unique  // Unique email
+  shopName    String?  // Optional shop name
+  logo        String?  // Optional logo
+  description String?  // Optional description
+  isDeleted   Boolean  @default(false)  // Indicates if the vendor is deleted
+  createdAt   DateTime @default(now())  // Timestamp for creation
+  updatedAt   DateTime @updatedAt  // Timestamp for last update
+  products    Product[]  // Products associated with the vendor
+  orders      Order[]  // Orders placed by customers for the vendor
+  followers   Follow[]  // Followers of the vendor
+  review      Review[]  // Reviews for the vendor
+  user        User     @relation(fields: [email], references: [email])  // Relation to User
+  @@map("vendors")  // Map model to "vendors" table in DB
 }
 
-// Customer model: Stores customer-specific details and relations to orders, reviews, and activities.
+// Customer model: Represents a customer in the system
 model Customer {
-  id                String   @id @default(uuid())       // Unique identifier
-  name              String                           // Customer's name
-  email             String   @unique                  // Customer's unique email
-  profilePhoto      String?                          // Optional profile photo
-  address           String?                          // Customer's address
-  phone             String?                          // Customer's phone number
-  isDeleted         Boolean  @default(false)          // Soft-delete flag
-  createdAt         DateTime @default(now())          // Record creation timestamp
-  updatedAt         DateTime @updatedAt               // Record update timestamp
-  orders            Order[]                           // List of orders placed
-  reviews           Review[]                          // List of reviews given
-  follows           Follow[]                          // Vendors followed
-  recentProductView RecentProductView[]               // Recently viewed products
-  customerCoupons   CustomerCoupon[]                  // Redeemed coupons
-
-  user User @relation(fields: [email], references: [email]) // Link to User model
-
-  @@map("customers")
+  id               String   @id @default(uuid())  // Unique identifier (UUID)
+  name             String   // Customer's name
+  email            String   @unique  // Unique email
+  profilePhoto     String?  // Optional profile photo
+  address          String?  // Optional address
+  phone            String?  // Optional phone number
+  isDeleted        Boolean  @default(false)  // Indicates if the customer is deleted
+  createdAt        DateTime @default(now())  // Timestamp for creation
+  updatedAt        DateTime @updatedAt  // Timestamp for last update
+  orders           Order[]  // Orders placed by the customer
+  reviews          Review[]  // Reviews written by the customer
+  follows          Follow[]  // Vendors followed by the customer
+  recentProductView RecentProductView[]  // Products recently viewed by the customer
+  customerCoupons  CustomerCoupon[]  // Coupons used by the customer
+  user             User     @relation(fields: [email], references: [email])  // Relation to User
+  @@map("customers")  // Map model to "customers" table in DB
 }
 
-// Product model: Represents products with pricing, inventory, and relationships.
+// Product model: Represents a product in the system
 model Product {
-  id                String   @id @default(uuid())       // Unique identifier
-  name              String                           // Product name
-  image             String[]                         // Product images
-  price             Float                            // Product price
-  inventory         Int                              // Available inventory count
-  description       String                           // Product description
-  flashSale         Boolean?  @default(false)         // Indicates flash sale
-  discount          Float?    @default(0)             // Discount amount
-  isDeleted         Boolean   @default(false)         // Soft-delete flag
-  categoryId        String?                          // Foreign key for category
-  vendorId          String                           // Foreign key for vendor
-  orderDetails      OrderDetail[]                    // Relationship to order details
-  reviews           Review[]                         // Product reviews
-  recentProductView RecentProductView[]              // Recently viewed relationship
-
-  category          Category?  @relation(fields: [categoryId], references: [id]) // Link to category
-  vendor            Vendor     @relation(fields: [vendorId], references: [id])   // Link to vendor
-
-  @@map("products")
+  id               String   @id @default(uuid())  // Unique identifier (UUID)
+  name             String   // Product name
+  image            String[]  // Product images (array)
+  price            Float    // Product price
+  inventory        Int      // Inventory quantity
+  description      String   // Product description
+  flashSale        Boolean? @default(false)  // Flash sale flag
+  discount         Float?   @default(0)  // Discount percentage
+  isDeleted        Boolean  @default(false)  // Indicates if the product is deleted
+  categoryId       String?  // Optional category ID
+  vendorId         String   // Vendor ID (foreign key)
+  orderDetails     OrderDetail[]  // Order details for this product
+  reviews          Review[]  // Reviews for the product
+  recentProductView RecentProductView[]  // Recent views of the product
+  category         Category? @relation(fields: [categoryId], references: [id])  // Category relation
+  vendor           Vendor   @relation(fields: [vendorId], references: [id])  // Vendor relation
+  @@map("products")  // Map model to "products" table in DB
 }
 
-// Category model: Represents product categories.
+// Category model: Represents a product category
 model Category {
-  id          String   @id @default(uuid())       // Unique identifier
-  name        String   @unique                  // Category name (unique)
-  image       String                           // Category image
-  isDeleted   Boolean  @default(false)          // Soft-delete flag
-  products    Product[]                         // Products under this category
-
-  @@map("categories")
+  id       String   @id @default(uuid())  // Unique identifier (UUID)
+  name     String   @unique  // Category name (unique)
+  image    String   // Category image
+  isDeleted Boolean @default(false)  // Indicates if the category is deleted
+  products Product[]  // Products belonging to this category
+  @@map("categories")  // Map model to "categories" table in DB
 }
 
-// Order model: Stores order details, including relationships to customers, vendors, and order items.
+// Order model: Represents a customer's order
 model Order {
-  id              String   @id @default(uuid())       // Unique identifier
-  customerId      String                           // Foreign key for customer
-  vendorId        String                           // Foreign key for vendor
-  totalPrice      Float                            // Total price of the order
-  deliveryAddress String                           // Delivery address
-  paymentStatus   PaymentStatus                    // Payment status (Paid/Unpaid)
-  transactionId   String   @unique                 // Unique transaction ID
-  orderDetails    OrderDetail[]                    // Details of products in the order
-
-  customer        Customer  @relation(fields: [customerId], references: [id]) // Link to customer
-  vendor          Vendor    @relation(fields: [vendorId], references: [id])   // Link to vendor
-
-  @@map("orders")
+  id               String   @id @default(uuid())  // Unique identifier (UUID)
+  customerId       String   // Customer ID (foreign key)
+  vendorId         String   // Vendor ID (foreign key)
+  totalPrice       Float    // Total price of the order
+  deliveryAddress  String   // Delivery address
+  paymentStatus    PaymentStatus  // Payment status (paid, unpaid, etc.)
+  transactionId    String   @unique  // Unique transaction ID
+  orderDetails     OrderDetail[]  // Details of the order (products, quantities)
+  customer         Customer  @relation(fields: [customerId], references: [id])  // Relation to Customer
+  vendor           Vendor    @relation(fields: [vendorId], references: [id])  // Relation to Vendor
+  @@map("orders")  // Map model to "orders" table in DB
 }
 
-// OrderDetail model: Represents individual items within an order.
+// OrderDetail model: Represents individual product details in an order
 model OrderDetail {
-  id             String   @id @default(uuid())       // Unique identifier
-  orderId        String                           // Foreign key for order
-  productId      String                           // Foreign key for product
-  quantity       Int                              // Quantity of the product
-  pricePerUnit   Float                            // Price per unit
-
-  order          Order     @relation(fields: [orderId], references: [id]) // Link to order
-  product        Product   @relation(fields: [productId], references: [id]) // Link to product
-
-  @@map("order_details")
+  id             String   @id @default(uuid())  // Unique identifier (UUID)
+  orderId        String   // Order ID (foreign key)
+  productId      String   // Product ID (foreign key)
+  quantity       Int      // Quantity of the product
+  pricePerUnit   Float    // Price per unit of the product
+  order          Order    @relation(fields: [orderId], references: [id])  // Relation to Order
+  product        Product  @relation(fields: [productId], references: [id])  // Relation to Product
+  @@map("order_details")  // Map model to "order_details" table in DB
 }
 
-// Review model: Represents reviews of products made by customers.
+// Review model: Represents a product review
 model Review {
-  id             String   @id @default(uuid())       // Unique identifier
-  productId      String                           // Foreign key for product
-  customerId     String                           // Foreign key for customer
-  vendorId       String                           // Foreign key for vendor
-  rating         Int                              // Rating value
-  comment        String?                          // Optional comment text
-
-  product        Product   @relation(fields: [productId], references: [id]) // Link to product
-  customer       Customer  @relation(fields: [customerId], references: [id]) // Link to customer
-  vendor         Vendor    @relation(fields: [vendorId], references: [id])   // Link to vendor
-
-  @@map("reviews")
+  id          String   @id @default(uuid())  // Unique identifier (UUID)
+  productId   String   // Product ID (foreign key)
+  customerId  String   // Customer ID (foreign key)
+  vendorId    String   // Vendor ID (foreign key)
+  rating      Int      // Rating (1 to 5)
+  comment     String?  // Optional comment
+  product     Product  @relation(fields: [productId], references: [id])  // Relation to Product
+  customer    Customer @relation(fields: [customerId], references: [id])  // Relation to Customer
+  vendor      Vendor   @relation(fields: [vendorId], references: [id])  // Relation to Vendor
+  @@map("reviews")  // Map model to "reviews" table in DB
 }
 
-// Follow model: Tracks relationships where customers follow vendors.
+// Follow model: Represents a customer following a vendor
 model Follow {
-  id             String   @id @default(uuid())       // Unique identifier
-  customerId     String                           // Foreign key for customer
-  vendorId       String                           // Foreign key for vendor
-
-  customer       Customer  @relation(fields: [customerId], references: [id]) // Link to customer
-  vendor         Vendor    @relation(fields: [vendorId], references: [id])   // Link to vendor
-
-  @@unique([customerId, vendorId]) // Ensure unique follow relationships
-  @@map("followers")
+  id          String   @id @default(uuid())  // Unique identifier (UUID)
+  customerId  String   // Customer ID (foreign key)
+  vendorId    String   // Vendor ID (foreign key)
+  customer    Customer  @relation(fields: [customerId], references: [id])  // Relation to Customer
+  vendor      Vendor    @relation(fields: [vendorId], references: [id])  // Relation to Vendor
+  @@unique([customerId, vendorId])  // Unique constraint (one customer follows one vendor once)
+  @@map("followers")  // Map model to "followers" table in DB
 }
 
-// RecentProductView model: Tracks products recently viewed by customers.
+// RecentProductView model: Represents products recently viewed by a customer
 model RecentProductView {
-  id             String   @id @default(uuid())       // Unique identifier
-  customerId     String                           // Foreign key for customer
-  productId      String                           // Foreign key for product
-  viewedAt       DateTime @default(now())          // Timestamp of viewing
-
-  customer       Customer  @relation(fields: [customerId], references: [id]) // Link to customer
-  product        Product   @relation(fields: [productId], references: [id])  // Link to product
+  id          String   @id @default(uuid())  // Unique identifier (UUID)
+  customerId  String   // Customer ID (foreign key)
+  productId   String   // Product ID (foreign key)
+  viewedAt    DateTime @default(now())  // Timestamp for when the product was viewed
+  customer    Customer @relation(fields: [customerId], references: [id])  // Relation to Customer
+  product     Product  @relation(fields: [productId], references: [id])  // Relation to Product
 }
 
-// Coupon model: Represents discount coupons in the system.
+// Coupon model: Represents a coupon that can be used by customers
 model Coupon {
-  id             String      @id @default(uuid())       // Unique identifier
-  code           String      @unique                  // Unique coupon code
-  discountType   DiscountType                         // Type of discount
-  discountValue  Float                                // Discount value
-  startDate      DateTime    @default(now())          // Start date
-  endDate        DateTime                             // Expiration date
-  usedCount      Int         @default(0)              // Number of uses
-  isActive       Boolean     @default(true)           // Active status
-  customerCoupons CustomerCoupon[]                    // Coupons redeemed by customers
-
-  @@map("coupons")
+  id             String      @id @default(uuid())  // Unique identifier (UUID)
+  code           String      @unique  // Unique coupon code
+  discountType   DiscountType  // Type of discount (percentage/fixed)
+  discountValue  Float       // Discount value
+  startDate      DateTime    @default(now())  // Start date for coupon validity
+  endDate        DateTime    // End date for coupon validity
+  usedCount      Int         @default(0)  // Number of times the coupon has been used
+  isActive       Boolean     @default(true)  // Indicates if the coupon is active
+  customerCoupons CustomerCoupon[]  // Coupons used by customers
+  @@map("coupons")  // Map model to "coupons" table in DB
 }
 
-// CustomerCoupon model: Tracks redeemed coupons by customers.
+// CustomerCoupon model: Represents a customer's use of a coupon
 model CustomerCoupon {
-  id             String      @id @default(uuid())       // Unique identifier
-  customerId     String                             // Foreign key for customer
-  couponId       String                             // Foreign key for coupon
-  redeemedAt     DateTime?                          // Redeemed timestamp
-  isRedeemed     Boolean     @default(false)        // Redemption status
-
-  customer       Customer    @relation(fields: [customerId], references: [id]) // Link to customer
-  coupon         Coupon      @relation(fields: [couponId], references: [id])   // Link to coupon
-
-  @@unique([customerId, couponId]) // Ensure unique redemption per coupon
-  @@map("customer_coupons")
+  id             String      @id @default(uuid())  // Unique identifier (UUID)
+  customerId     String      // Customer ID (foreign key)
+  couponId       String      // Coupon ID (foreign key)
+  redeemedAt     DateTime?   // Timestamp when coupon was redeemed
+  isRedeemed     Boolean     @default(false)  // Indicates if the coupon was redeemed
+  customer       Customer    @relation(fields: [customerId], references: [id])  // Relation to Customer
+  coupon         Coupon      @relation(fields: [couponId], references: [id])  // Relation to Coupon
+  @@unique([customerId, couponId])  // Unique constraint for customer and coupon combination
+  @@map("customer_coupons")  // Map model to "customer_coupons" table in DB
 }
 
-// Enums: Represent role, status, and payment types.
+// Enum types: Defines various types and statuses used in the models
 enum DiscountType {
   PERCENTAGE
   FIXED
