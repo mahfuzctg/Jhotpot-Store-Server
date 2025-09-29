@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import { paymentController } from './payment.controller';
 

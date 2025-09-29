@@ -2,6 +2,10 @@
   "include": ["src"],
   "exclude": ["node_modules"],
   "compilerOptions": {
+    "jsx": "react", // or "react-jsx" if you're using React 17+
+    "allowJs": true,
+
+    "resolveJsonModule": true,
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
     /* Projects */
